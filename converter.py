@@ -5,7 +5,17 @@ from validation import *
 
 def parse(filepath: str):
     """
-    placeholder
+    Attempts to parse an entire Pitanja file.
+
+    It first checks whether the file starts with a Pitanja signature ('@PITANJA_FILE <name>').
+    It extracts the file name from this signature.
+    
+    Then it iterates over the file line by line and attempts to parse question by question.
+
+    Whenever it encounters a question signature ('@PITANJE <type>') it moves to the next line and calls the
+    appropriate parser method which parses the rest of the question until the question end signature ('---===---').
+
+    Once it finishes, it returns a dictionary object containing the file name and a list of all parsed questions.
     """
     with open(filepath, "r") as pitanja_file:
 
@@ -54,14 +64,29 @@ def parse(filepath: str):
             "questions": dictlist
         }
 
-        print(result)
-
         return result
 
 
 
 def __parse_zaokruzi(lines: List[str], line_counter: int) -> Tuple[int, Dict[str, Union[str, List[str]]]]:
-    "Parses a 'zaokruzi' question"
+    """
+    Parses a 'zaokruzi' question by iterating over all lines until reaching the line containing '---===---'.
+    Empty lines are ignored.
+
+    The first non-empty line must start with a question signature ('??? <question>') which contains the actual
+    question.
+
+    Then the following lines (until question end) must all conform to the form of '@+/- <answer>' where '+' denotes
+    a right and '-' denotes a wrong answer.
+
+    Once parsing is finished, it returns a tuple containing: 
+    
+    - index of question end line
+
+    - dictionary object containing question type ('zaokruzi'), question itself, 
+      a list of right answers and a list of wrong answers.
+    """
+
     qline: str = lines[line_counter]
     while qline.isspace():
         line_counter += 1
@@ -115,7 +140,23 @@ def __parse_zaokruzi(lines: List[str], line_counter: int) -> Tuple[int, Dict[str
     return (line_counter, result)
 
 def __parse_dane(lines: List[str], line_counter: int) -> Tuple[int, Dict[str, str]]:
-    "Parses a 'da-ne' question"
+    """
+    Parses a 'zaokruzi' question by iterating over all lines until reaching the line containing '---===---'.
+    Empty lines are ignored.
+
+    The first non-empty line must start with a question signature ('??? <question>') which contains the actual
+    question.
+
+    Then the following line must be either '@DA' (denoting "true") or '@NE' (denoting "false"). It assumes only one
+    such line will be provided, but in the case of multiple lines being provided (which is itself nonsense) only the content
+    of the last line will be returned.
+
+    Once parsing is finished, it returns a tuple containing: 
+    
+    - index of question end line
+
+    - dictionary object containing question type ('da-ne'), question itself, right answer
+    """
     qline: str = lines[line_counter]
     while qline.isspace():
         line_counter += 1
@@ -165,7 +206,22 @@ def __parse_dane(lines: List[str], line_counter: int) -> Tuple[int, Dict[str, st
 
 def __parse_dopuni(lines: List[str], line_counter: int) -> Tuple[int, Dict[str, Union[str, List[Dict[str, List[str]]]]]]:
     """
-    placeholder
+    Parses a 'dopuni' question by iterating over all lines until reaching the line containing '---===---'.
+    Empty lines are ignored.
+
+    The first non-empty line must start with a question signature ('??? <question>') which contains the actual
+    question.
+
+    Then the following lines (until question end) must all conform to the form of '@<key> <answer>' where the key is some
+    string or integer value.
+    These are then placed in a dictionary (key is key) where value is a list of strings (all answers tied to a particular key).
+
+    Once parsing is finished, it returns a tuple containing: 
+    
+    - index of question end line
+
+    - dictionary object containing question type ('dopuni), question itself,
+      answer dictionary (keys holding lists of answers)
     """
     qline: str = lines[line_counter]
     while qline.isspace():
