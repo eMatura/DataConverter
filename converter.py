@@ -41,7 +41,7 @@ def parse(filepath: str):
                 cur_counter += 1
                 continue
             
-            curvalidation = validate_questiontype(curline)
+            curvalidation: Tuple[bool, str] = validate_questiontype(curline)
 
             if not curvalidation[0]:
                 raise Exception("Provided invalid question type line: ", curline)
@@ -50,14 +50,19 @@ def parse(filepath: str):
                     res = __parse_zaokruzi(pitanja_lines, (cur_counter + 1))
                     dictlist.append(res[1])
                     cur_counter = (res[0] + 1)
+
                 elif curvalidation[1] == "da-ne":
                     res = __parse_dane(pitanja_lines, (cur_counter + 1))
                     dictlist.append(res[1])
                     cur_counter = (res[0] + 1)
+
                 elif curvalidation[1] == "dopuni":
                     res = __parse_dopuni(pitanja_lines, (cur_counter + 1))
                     dictlist.append(res[1])
                     cur_counter = (res[0] + 1)
+                    
+                else:
+                    raise Exception("Invalid question type provided!")
         
         result = {
             "filename": file_name,
@@ -117,8 +122,8 @@ def __parse_zaokruzi(lines: List[str], line_counter: int) -> Tuple[int, Dict[str
         if nline.strip() == "---===---":
             line_counter += 1
             break
-
-        nvalidation: Tuple[bool, bool, str] = validate_zaokruzi_answer(nline)
+        #                  valid,   right/wrong,    answer
+        nvalidation: Tuple[bool,       bool,         str] = validate_zaokruzi_answer(nline)
         
         if not nvalidation[0]:
             raise Exception("Provided invalid answer line: ", nline)
@@ -204,7 +209,7 @@ def __parse_dane(lines: List[str], line_counter: int) -> Tuple[int, Dict[str, st
 
     return (line_counter, result)
 
-def __parse_dopuni(lines: List[str], line_counter: int) -> Tuple[int, Dict[str, Union[str, List[Dict[str, List[str]]]]]]:
+def __parse_dopuni(lines: List[str], line_counter: int) -> Tuple[int, Dict[str, Union[str, Dict[str, List[str]]]]]:
     """
     Parses a 'dopuni' question by iterating over all lines until reaching the line containing '---===---'.
     Empty lines are ignored.
@@ -252,8 +257,8 @@ def __parse_dopuni(lines: List[str], line_counter: int) -> Tuple[int, Dict[str, 
         if nline.strip() == "---===---":
             line_counter += 1
             break
-
-        nvalidation: Tuple[bool, str, str] = validate_dopuni_answer(nline)
+        #                  valid,   key,   answer    
+        nvalidation: Tuple[bool,    str,    str] = validate_dopuni_answer(nline)
 
         if not nvalidation[0]:
             raise Exception("Provided invalid answer line: ", nline)
