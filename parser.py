@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from typing import Tuple, Dict, List, Union
 from validation import *
 
